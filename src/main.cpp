@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
 
   variants.init();
   UCI::init(Options);
+  Tune::init();
   PSQT::init(variants.find("chess")->second);
   Bitboards::init();
   Position::init();
