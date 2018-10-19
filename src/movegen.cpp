@@ -139,7 +139,7 @@ namespace {
         emptySquares = (Type == QUIETS || Type == QUIET_CHECKS ? target : ~pos.pieces());
 
         Bitboard b1 = shift<Up>(pawnsNotOn7)   & emptySquares;
-        Bitboard b2 = pos.double_step_enabled() ? shift<Up>(b1 & TRank3BB) & emptySquares : 0;
+        Bitboard b2 = pos.double_step_enabled() ? shift<Up>(b1 & TRank3BB) & emptySquares : Bitboard(0);
 
         if (Type == EVASIONS) // Consider only blocking squares
         {
@@ -369,7 +369,7 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
 
   Bitboard target =  Type == CAPTURES     ?  pos.pieces(~us)
                    : Type == QUIETS       ? ~pos.pieces()
-                   : Type == NON_EVASIONS ? ~pos.pieces(us) : 0;
+                   : Type == NON_EVASIONS ? ~pos.pieces(us) : Bitboard(0);
   target &= pos.board_bb();
 
   return us == WHITE ? generate_all<WHITE, Type>(pos, moveList, target)

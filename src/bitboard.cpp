@@ -379,7 +379,7 @@ void Bitboards::init() {
       RankBB[r] = r > RANK_1 ? RankBB[r - 1] << FILE_NB : Rank1BB;
 
   for (File f = FILE_A; f <= FILE_MAX; ++f)
-      AdjacentFilesBB[f] = (f > FILE_A ? FileBB[f - 1] : 0) | (f < FILE_MAX ? FileBB[f + 1] : 0);
+      AdjacentFilesBB[f] = (f > FILE_A ? FileBB[f - 1] : Bitboard(0)) | (f < FILE_MAX ? FileBB[f + 1] : Bitboard(0));
 
   for (Rank r = RANK_1; r < RANK_MAX; ++r)
       ForwardRanksBB[WHITE][r] = ~(ForwardRanksBB[BLACK][r + 1] = ForwardRanksBB[BLACK][r] | RankBB[r]);
@@ -394,7 +394,7 @@ void Bitboards::init() {
 
   for (File f = FILE_A; f <= FILE_MAX; ++f)
       for (Rank r = RANK_1; r <= RANK_MAX; ++r)
-          BoardSizeBB[f][r] = ForwardFileBB[BLACK][make_square(f, r)] | SquareBB[make_square(f, r)] | (f > FILE_A ? BoardSizeBB[f - 1][r] : 0);
+          BoardSizeBB[f][r] = ForwardFileBB[BLACK][make_square(f, r)] | SquareBB[make_square(f, r)] | (f > FILE_A ? BoardSizeBB[f - 1][r] : Bitboard(0));
 
   for (Square s1 = SQ_A1; s1 <= SQ_MAX; ++s1)
       for (Square s2 = SQ_A1; s2 <= SQ_MAX; ++s2)
