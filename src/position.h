@@ -58,6 +58,7 @@ struct StateInfo {
   Bitboard   blockersForKing[COLOR_NB];
   Bitboard   pinners[COLOR_NB];
   Bitboard   checkSquares[PIECE_TYPE_NB];
+  Bitboard   flippedPieces;
   bool       capturedpromoted;
   bool       shak;
 };
@@ -116,12 +117,14 @@ public:
   bool captures_to_hand() const;
   bool first_rank_drops() const;
   bool drop_on_top() const;
+  bool enclosing_drop() const;
   Bitboard drop_region(Color c) const;
   bool sittuyin_rook_drop() const;
   bool drop_opposite_colored_bishop() const;
   bool drop_promoted() const;
   bool shogi_doubled_pawn() const;
   bool immobility_illegal() const;
+  bool flip_enclosed_pieces() const;
   // winning conditions
   Value stalemate_value(int ply = 0) const;
   Value checkmate_value(int ply = 0) const;
@@ -405,6 +408,11 @@ inline bool Position::drop_on_top() const {
   return var->dropOnTop;
 }
 
+inline bool Position::enclosing_drop() const {
+  assert(var != nullptr);
+  return var->enclosingDrop;
+}
+
 inline Bitboard Position::drop_region(Color c) const {
   assert(var != nullptr);
   return c == WHITE ? var->whiteDropRegion : var->blackDropRegion;
@@ -435,9 +443,17 @@ inline bool Position::immobility_illegal() const {
   return var->immobilityIllegal;
 }
 
+inline bool Position::flip_enclosed_pieces() const {
+  assert(var != nullptr);
+  return var->flipEnclosedPieces;
+}
+
 inline Value Position::stalemate_value(int ply) const {
   assert(var != nullptr);
-  return convert_mate_value(var->stalemateValue, ply);
+  if (!var->stalematePieceCount)
+      return convert_mate_value(var->stalemateValue, ply);
+  int c = count<ALL_PIECES>(sideToMove) - count<ALL_PIECES>(~sideToMove);
+  return c == 0 ? VALUE_DRAW : convert_mate_value(c < 0 ? var->stalemateValue : -var->stalemateValue, ply);
 }
 
 inline Value Position::checkmate_value(int ply) const {

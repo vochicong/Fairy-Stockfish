@@ -60,6 +60,7 @@ struct Variant {
   bool capturesToHand = false;
   bool firstRankDrops = false;
   bool dropOnTop = false;
+  bool enclosingDrop = false;
   Bitboard whiteDropRegion = AllSquares;
   Bitboard blackDropRegion = AllSquares;
   bool sittuyinRookDrop = false;
@@ -67,8 +68,10 @@ struct Variant {
   bool dropPromoted = false;
   bool shogiDoubledPawn = true;
   bool immobilityIllegal = false;
+  bool flipEnclosedPieces = false;
   // game end
   Value stalemateValue = VALUE_DRAW;
+  bool stalematePieceCount = false; // multiply stalemate value by sign(count(~stm) - count(stm))
   Value checkmateValue = -VALUE_MATE;
   bool shogiPawnDropMateIllegal = false;
   bool shatarMateRule = false;

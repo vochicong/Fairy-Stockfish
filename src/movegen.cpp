@@ -99,18 +99,31 @@ namespace {
             b &= rank_bb(relative_rank(Us, RANK_1, pos.max_rank()));
 
         // Add to move list
-        if (pos.drop_promoted() && pos.promoted_piece_type(pt))
+        if (pos.enclosing_drop())
         {
-            Bitboard b2 = b;
-            if (Checks)
-                b2 &= pos.check_squares(pos.promoted_piece_type(pt));
-            while (b2)
-                *moveList++ = make_drop(pop_lsb(&b2), pt, pos.promoted_piece_type(pt));
+            while (b)
+            {
+                Square s = pop_lsb(&b);
+                // Filter out squares where the drop does not enclose at least one opponent's piece (Othello)
+                if (attacks_bb(Us, QUEEN, s, pos.board_bb() & ~pos.pieces(~Us)) & ~DistanceRingBB[s][0] & pos.pieces(Us))
+                    *moveList++ = make_drop(s, pt, pt);
+            }
         }
-        if (Checks)
-            b &= pos.check_squares(pt);
-        while (b)
-            *moveList++ = make_drop(pop_lsb(&b), pt, pt);
+        else
+        {
+            if (pos.drop_promoted() && pos.promoted_piece_type(pt))
+            {
+                Bitboard b2 = b;
+                if (Checks)
+                    b2 &= pos.check_squares(pos.promoted_piece_type(pt));
+                while (b2)
+                    *moveList++ = make_drop(pop_lsb(&b2), pt, pos.promoted_piece_type(pt));
+            }
+            if (Checks)
+                b &= pos.check_squares(pt);
+            while (b)
+                *moveList++ = make_drop(pop_lsb(&b), pt, pt);
+        }
     }
 
     return moveList;
