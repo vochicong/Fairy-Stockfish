@@ -88,7 +88,7 @@ namespace {
   constexpr Value SpaceThreshold = Value(12222);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
-  constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
+  constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10, 20 };
 
   // Penalties for enemy's safe checks
   constexpr int QueenSafeCheck  = 780;
@@ -337,7 +337,7 @@ namespace {
         if (b & kingRing[Them])
         {
             kingAttackersCount[Us]++;
-            kingAttackersWeight[Us] += KingAttackWeights[std::min(Pt, QUEEN)];
+            kingAttackersWeight[Us] += KingAttackWeights[std::min(int(Pt), QUEEN + 1)];
             kingAttacksCount[Us] += popcount(b & attackedBy[Them][KING]);
         }
 
@@ -456,8 +456,7 @@ namespace {
         if ((b & kingRing[Them]) && pt != SHOGI_PAWN)
         {
             kingAttackersCount[Us] += pos.count_in_hand(Us, pt);
-            kingAttackersWeight[Us] += KingAttackWeights[std::min(pt, QUEEN)] * pos.count_in_hand(Us, pt);
-            kingAttacksCount[Us] += popcount(b & attackedBy[Them][KING]);
+            kingAttackersWeight[Us] += KingAttackWeights[std::min(int(pt), QUEEN + 1)] * pos.count_in_hand(Us, pt);
         }
         Bitboard theirHalf = pos.board_bb() & ~forward_ranks_bb(Them, relative_rank(Them, Rank((pos.max_rank() - 1) / 2), pos.max_rank()));
         mobility[Us] += DropMobility * popcount(b & theirHalf & ~attackedBy[Them][ALL_PIECES]);
