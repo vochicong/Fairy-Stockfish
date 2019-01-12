@@ -90,6 +90,9 @@ namespace {
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
 
+  int KingDangerWeights[6] = { 102, 191, 143, 848, 9, 40 };
+  TUNE(KingDangerWeights);
+
   // Penalties for enemy's safe checks
   constexpr int QueenSafeCheck  = 780;
   constexpr int RookSafeCheck   = 880;
@@ -553,12 +556,12 @@ namespace {
         unsafeChecks &= mobilityArea[Them];
 
         kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
-                     + 102 * kingAttacksCount[Them] * (1 + pos.captures_to_hand() + !!pos.max_check_count())
-                     + 191 * popcount(kingRing[Us] & weak) * (1 + pos.captures_to_hand() + !!pos.max_check_count())
-                     + 143 * popcount(pos.blockers_for_king(Us) | unsafeChecks)
-                     - 848 * !(pos.count<QUEEN>(Them) || pos.captures_to_hand())
-                     -   9 * mg_value(score) / 8
-                     +  40;
+                     + KingDangerWeights[0] * kingAttacksCount[Them] * (1 + pos.captures_to_hand() + !!pos.max_check_count())
+                     + KingDangerWeights[1] * popcount(kingRing[Us] & weak) * (1 + pos.captures_to_hand() + !!pos.max_check_count())
+                     + KingDangerWeights[2] * popcount(pos.blockers_for_king(Us) | unsafeChecks)
+                     - KingDangerWeights[3] * !(pos.count<QUEEN>(Them) || pos.captures_to_hand())
+                     - KingDangerWeights[4] * mg_value(score) / 8
+                     + KingDangerWeights[5];
 
         // Transform the kingDanger units into a Score, and subtract it from the evaluation
         if (kingDanger > 0)
