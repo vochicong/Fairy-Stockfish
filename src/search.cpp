@@ -66,9 +66,11 @@ namespace {
   constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
   // Razor and futility margins
-  constexpr int RazorMargin[] = {0, 590, 604};
+  int RazorMargin[] = {0, 590, 604};
+  int margins[] = {175, 50, 36, 225, 823, 67, 216, 48, 29, PawnValueEg};
+  TUNE(RazorMargin, margins);
   Value futility_margin(Depth d, bool improving) {
-    return Value((175 - 50 * improving) * d / ONE_PLY);
+    return Value((margins[0] - margins[1] * improving) * d / ONE_PLY);
   }
 
   // Futility and reductions lookup tables, initialized at startup
@@ -754,7 +756,7 @@ namespace {
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22500
         &&  eval >= beta
-        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  ss->staticEval >= beta - margins[2] * depth / ONE_PLY + margins[3]
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (pos.pieces(~us) ^ pos.pieces(~us, PAWN))
@@ -764,7 +766,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
+        Depth R = ((margins[4] + margins[5] * depth / ONE_PLY) / 256 + std::min((eval - beta) / PawnValueMg, 3)) * ONE_PLY;
 
         ss->currentMove = MOVE_NULL;
         ss->contHistory = thisThread->contHistory[NO_PIECE][0].get();
@@ -808,7 +810,7 @@ namespace {
         &&  (pos.pieces() ^ pos.pieces(CLOBBER_PIECE))
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
-        Value rbeta = std::min(beta + 216 * (1 + !!pos.max_check_count() + (pos.extinction_value() != VALUE_NONE)) - 48 * improving, VALUE_INFINITE);
+        Value rbeta = std::min(beta + margins[6] * (1 + !!pos.max_check_count() + (pos.extinction_value() != VALUE_NONE)) - margins[7] * improving, VALUE_INFINITE);
         MovePicker mp(pos, ttMove, rbeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
 
@@ -971,12 +973,12 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Prune moves with negative SEE (~10 Elo)
-              if (!pos.must_capture() && !pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
+              if (!pos.must_capture() && !pos.see_ge(move, Value(-margins[8] * lmrDepth * lmrDepth)))
                   continue;
           }
           else if (   !extension // (~20 Elo)
                    && !pos.must_capture()
-                   && !pos.see_ge(move, -Value(PawnValueEg * (depth / ONE_PLY))))
+                   && !pos.see_ge(move, -Value(margins[9] * (depth / ONE_PLY))))
                   continue;
       }
 
