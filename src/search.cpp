@@ -67,8 +67,8 @@ namespace {
 
   // Razor and futility margins
   constexpr int RazorMargin[] = {0, 590, 604};
-  Value futility_margin(Depth d, bool improving) {
-    return Value((175 - 50 * improving) * d / ONE_PLY);
+  Value futility_margin(Depth d, bool improving, const Position& pos) {
+    return Value((175 - 50 * improving + 50 * (pos.capture_the_flag_piece() - pos.must_capture())) * d / ONE_PLY);
   }
 
   // Futility and reductions lookup tables, initialized at startup
@@ -745,7 +745,7 @@ namespace {
         &&  depth < 7 * ONE_PLY
         && !(   pos.extinction_value() == -VALUE_MATE
              && pos.extinction_piece_types().find(ALL_PIECES) == pos.extinction_piece_types().end())
-        &&  eval - futility_margin(depth, improving) * (1 + !!pos.max_check_count()) >= beta
+        &&  eval - futility_margin(depth, improving, pos) * (1 + !!pos.max_check_count()) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
 
